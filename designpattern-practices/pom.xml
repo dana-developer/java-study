@@ -17,6 +17,6 @@
   </dependencies>
   
   <build>
-  	<finalName>practice04</finalName>
+  	<finalName>designpattern-practices</finalName>
   </build>
 </project>
