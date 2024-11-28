@@ -2,6 +2,7 @@ package test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -23,28 +24,53 @@ public class TCPServer {
 			// 3. accept
 			Socket socket = serverSocket.accept(); // blocking
 			
-			System.out.println("연결 성공");
-			
-			// 4. IO Stream 받아오기
-			InputStream is = socket.getInputStream();
-			
-			// 5. 데이터 읽기
-			byte[] buffer = new byte[256];
-			int readByteCount = is.read(buffer); // blocking
-			if(readByteCount == -1) {
-				// closed by client
-				System.out.println("[server] closed by client");
-				return;
+			try {
+				InetSocketAddress inetRemoteAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
+				inetRemoteAddress.getAddress().getHostAddress();
+				int remotePort = inetRemoteAddress.getPort();
+				
+				System.out.println("[server] connected by client["+inetRemoteAddress+":"+remotePort+"]");
+				
+				// 4. IO Stream 받아오기
+				InputStream is = socket.getInputStream();
+				OutputStream os = socket.getOutputStream();
+				
+				// 5. 데이터 읽기
+				while(true) {
+					byte[] buffer = new byte[256];
+					int readByteCount = is.read(buffer); // blocking
+					
+					if(readByteCount == -1) {
+						// closed by client
+						System.out.println("[server] closed by client");
+						break;
+					}
+					
+					String data = new String(buffer, 0, readByteCount, "utf-8");
+					System.out.println("[server] receive : " + data);
+					
+					// 6. 데이터 쓰기
+					os.write(data.getBytes("utf-8"));
+				}
+				
+			} catch (IOException e) {
+				System.out.println("error : "+ e);
+			} finally {
+				try {
+					if(socket != null && !socket.isClosed()) {
+						socket.close();
+					}
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
 			}
 			
-			String data = new String(buffer, 0, readByteCount, "utf-8");
-			System.out.println("[server] receive : " + data);
 			
 		} catch (IOException e) {
 			System.out.println("[server] error: " + e);
 		} finally {
 			try {
-				if(serverSocket != null && serverSocket.isClosed()) {
+				if(serverSocket != null && !serverSocket.isClosed()) {
 					serverSocket.close();
 				}
 			} catch (IOException e) {
