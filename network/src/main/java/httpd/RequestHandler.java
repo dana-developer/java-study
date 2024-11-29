@@ -5,13 +5,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Files;
 
 public class RequestHandler extends Thread {
 	private Socket socket;
+	private final String DOCUMENT_ROOT = "./webapp";
 	
 	public RequestHandler(Socket socket) {
 		this.socket = socket;
@@ -57,7 +57,8 @@ public class RequestHandler extends Thread {
 			} else {
 				// methods : POST, DELETE, PUT, HEAD, CONNECT, ...
 				// SimpleHttpServer에서는 무시(400 Bad Request)
-				errorResponse(outputStream, "400", "Bad Request");
+//				errorResponse(outputStream, "400", "Bad Request", tokens[2]);
+				response400error(outputStream, tokens[2]);
 			}
 					
 			// 예제 응답입니다.
@@ -87,18 +88,19 @@ public class RequestHandler extends Thread {
 			url = "/index.html";
 		}
 		
-		File file = new File("./webapp" + url);
+		File file = new File(DOCUMENT_ROOT + url);
 		
 		if(!file.exists()) {
 			// 404 response
-			errorResponse(os, "404", "File Not Found");
+			response404error(os, protocol);
+//			errorResponse(os, "404", "Not Found", protocol);
 			return;
 		}
 		
 		byte[] body = Files.readAllBytes(file.toPath());
 		String contentType = Files.probeContentType(file.toPath());
 		
-		os.write( "HTTP/1.1 200 OK\n".getBytes("UTF-8")); //header
+		os.write((protocol+" 200 OK\n").getBytes("UTF-8")); //header
 		os.write(("Content-Type:" + contentType + "; charset=utf-8\n").getBytes("UTF-8"));
 		os.write("\n".getBytes());
 		os.write(body);
@@ -108,12 +110,45 @@ public class RequestHandler extends Thread {
 		System.out.println("[RequestHandler#" + getId() + "] " + message);
 	}
 	
-	private void errorResponse(OutputStream outputStream, String errorType, String errorMessage) throws IOException {
-		File file = new File("./webapp/error/" + errorType + ".html");
+//	private void errorResponse(OutputStream outputStream, String errorType, String errorMessage, String protocol) throws IOException {
+//		File file = new File(DOCUMENT_ROOT+"/error/" + errorType + ".html");
+//		String contentType = Files.probeContentType(file.toPath());
+//		byte[] body = Files.readAllBytes(file.toPath());
+//
+//		outputStream.write((protocol+" "+errorType + " "+errorMessage+"\n").getBytes("UTF-8"));
+//		outputStream.write(("Content-Type:" + contentType + "; charset=utf-8\n").getBytes("UTF-8"));
+//		outputStream.write("\n".getBytes());
+//		outputStream.write(body);
+//	}
+	
+	private void response404error(OutputStream outputStream, String protocol) throws IOException {
+		/*
+		 HTTP/1.1 404 File Not Found\n
+		 Content-type:text.html; charset=utf-8\n
+		 */
+		
+		File file = new File(DOCUMENT_ROOT+"/error/404.html");
+		String contentType = Files.probeContentType(file.toPath());
 		byte[] body = Files.readAllBytes(file.toPath());
-
-		outputStream.write(("HTTP/1.1 "+errorType + " "+errorMessage+"\n").getBytes("UTF-8"));
-		outputStream.write("Content-Type:text/html; charset=utf-8\n".getBytes("UTF-8"));
+		
+		outputStream.write((protocol + " 404 File Not Found\n").getBytes("UTF-8"));
+		outputStream.write(("Content-Type:" + contentType + "; charset=utf-8\n").getBytes("UTF-8"));
+		outputStream.write("\n".getBytes());
+		outputStream.write(body);
+	}
+	
+	private void response400error(OutputStream outputStream, String protocol) throws IOException {
+		/*
+		 HTTP/1.1 400 Bad Request\n
+		 Content-type:text.html; charset=utf-8\n
+		 */
+		
+		File file = new File(DOCUMENT_ROOT+"/error/400.html");
+		String contentType = Files.probeContentType(file.toPath());
+		byte[] body = Files.readAllBytes(file.toPath());
+		
+		outputStream.write((protocol + " 400 Bad Request\n").getBytes("UTF-8"));
+		outputStream.write(("Content-Type:" + contentType + "; charset=utf-8\n").getBytes("UTF-8"));
 		outputStream.write("\n".getBytes());
 		outputStream.write(body);
 	}
