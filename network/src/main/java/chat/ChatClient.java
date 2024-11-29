@@ -33,7 +33,7 @@ public class ChatClient {
 			pw.println("join:"+encodedNickname);
 			pw.flush();
 			
-			new ChatClientThread(br, socket, scanner).start();
+			new ChatClientThread(br).start();
 			
 			while(true) {
 				String input = scanner.nextLine();

@@ -106,7 +106,7 @@ public class ChatServerThread extends Thread {
 	
 	private void doQuit(PrintWriter printWriter) {
 		removeWriter(printWriter);
-		String data = nickname + "님이 퇴장하였습니다";
+		String data = nickname + "님이 퇴장하였습니다.";
 		broadcast(data);
 	}
 	
