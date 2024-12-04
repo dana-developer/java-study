@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ChatServer {
@@ -22,7 +22,7 @@ public class ChatServer {
 			serverSocket.bind(new InetSocketAddress(SERVER_IP, PORT));
 			log("starts...[port:"+PORT+"]");
 			
-			List<PrintWriter> writerPool = new Vector<PrintWriter>(); //동기화 처리
+			List<PrintWriter> writerPool = new ArrayList<PrintWriter>();
 			
 			while(true) {
 				Socket socket = serverSocket.accept();
