@@ -1,4 +1,4 @@
-package behaviroal.observer;
+package behavioral.observer;
 
 public interface Observer<T> {
 	void update(T val);

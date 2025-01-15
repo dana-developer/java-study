@@ -1,4 +1,4 @@
-package behaviroal.observer;
+package behavioral.observer;
 
 import java.util.Scanner;
 
